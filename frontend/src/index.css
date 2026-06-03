@@ -1,0 +1,126 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Cabinet+Grotesk:wght@500;700;800&display=swap");
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #fffbf5;
+    color: #1a1a2e;
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f0ebe3;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #e8d5c4;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #d4c0ae;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: #ff6b35;
+    color: #ffffff;
+  }
+}
+
+@layer components {
+  /* Warm card with border */
+  .card-warm {
+    background-color: #ffffff;
+    border: 1px solid #e8d5c4;
+    border-radius: 16px;
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.04),
+      0 1px 2px rgba(0, 0, 0, 0.02);
+  }
+
+  /* Primary button */
+  .btn-primary {
+    background-color: #ff6b35;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      transform 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: #e55a2b;
+  }
+
+  .btn-primary:active {
+    transform: scale(0.97);
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    background-color: #ffffff;
+    color: #004e64;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    border: 2px solid #004e64;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      transform 0.15s ease;
+  }
+
+  .btn-secondary:hover {
+    background-color: #fff3e8;
+  }
+
+  .btn-secondary:active {
+    transform: scale(0.97);
+  }
+
+  /* Input field */
+  .input-warm {
+    background-color: #ffffff;
+    border: 2px solid #e8d5c4;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #1a1a2e;
+    width: 100%;
+    transition:
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+    outline: none;
+  }
+
+  .input-warm:focus {
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px #fff3e8;
+  }
+
+  .input-warm::placeholder {
+    color: #8b8b9e;
+  }
+}

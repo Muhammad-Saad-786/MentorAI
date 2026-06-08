@@ -2,9 +2,8 @@
 
 <div align="center">
 
-<p align="center">
-  <img src="./public/MentorAI-banner.jpg" alt="Mentor AI Banner" width="100%">
-</p>
+
+  [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&width=435&lines=Learn+to+Think+Like+a+Developer%2C)](https://git.io/typing-svg)
 
 ### 🧠 Learn to Think Like a Developer, Not Depend on AI
 

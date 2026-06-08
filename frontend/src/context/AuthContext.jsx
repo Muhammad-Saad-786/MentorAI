@@ -4,30 +4,48 @@ import api from "../lib/api";
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  // To this for testing:
-  const [user, setUser] = useState({
-    name: "Developer",
-    email: "dev@mentorai.com",
-  });
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
-  // Check for existing session on mount
+  // Set token in axios headers
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("token");
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
+    if (token) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    } else {
+      delete api.defaults.headers.common["Authorization"];
     }
-    setLoading(false);
-  }, []);
+  }, [token]);
+
+  // Load user on mount if token exists
+  useEffect(() => {
+    const loadUser = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await api.get("/auth/me");
+        setUser(response.data);
+      } catch (error) {
+        console.error("Failed to load user:", error);
+        localStorage.removeItem("token");
+        setToken(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUser();
+  }, [token]);
 
   const login = useCallback(async (email, password) => {
     const response = await api.post("/auth/login", { email, password });
-    const { token, user } = response.data;
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    setUser(user);
-    return user;
+    const { user: userData, token: newToken } = response.data;
+    localStorage.setItem("token", newToken);
+    setToken(newToken);
+    setUser(userData);
+    return userData;
   }, []);
 
   const register = useCallback(async (name, email, password) => {
@@ -36,21 +54,40 @@ export function AuthProvider({ children }) {
       email,
       password,
     });
-    const { token, user } = response.data;
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    setUser(user);
-    return user;
+    const { user: userData, token: newToken } = response.data;
+    localStorage.setItem("token", newToken);
+    setToken(newToken);
+    setUser(userData);
+    return userData;
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    setToken(null);
     setUser(null);
   }, []);
 
+  const forgotPassword = useCallback(async (email) => {
+    await api.post("/auth/forgot-password", { email });
+  }, []);
+
+  const resetPassword = useCallback(async (token, password) => {
+    await api.post(`/auth/reset-password/${token}`, { password });
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        token,
+        login,
+        register,
+        logout,
+        forgotPassword,
+        resetPassword,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

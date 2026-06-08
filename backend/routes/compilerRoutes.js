@@ -1,6 +1,8 @@
 import express from "express";
 const router = express.Router();
 import { getLanguageConfig } from "../services/judge0Service.js";
+import { getMentorResponse } from "../services/geminiService.js";
+import { protect } from "../middlewares/authMiddleware.js";
 
 router.post("/run", async (req, res) => {
   try {
@@ -38,6 +40,32 @@ router.post("/run", async (req, res) => {
   } catch (error) {
     console.error("Compiler error:", error.message);
     res.status(500).json({ error: "Failed to process request" });
+  }
+});
+
+router.post("/review", protect, async (req, res) => {
+  try {
+    const { code, language } = req.body;
+
+    if (!code || !language) {
+      return res.status(400).json({ error: "Code and language are required" });
+    }
+
+    const reviewMessage = `Please review my ${language} code. Tell me what's good, what can be improved, and any bugs or edge cases I might have missed. Be specific but encouraging. Here's the code:\n\n\`\`\`${language}\n${code}\n\`\`\``;
+
+    const result = await getMentorResponse(
+      `review-${req.user._id}`,
+      reviewMessage,
+      "review",
+    );
+
+    res.json({
+      review: result.response,
+      hintLevel: result.hintLevel,
+    });
+  } catch (error) {
+    console.error("Review error:", error.message);
+    res.status(500).json({ error: "Failed to review code" });
   }
 });
 

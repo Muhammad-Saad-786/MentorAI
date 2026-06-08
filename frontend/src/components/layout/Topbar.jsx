@@ -1,6 +1,7 @@
 import { useAuth } from "../../hooks/useAuth";
 import { Bell, Search, ChevronDown, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NotificationBell from "./NotificationBell";
 
 export default function Topbar({ onMenuClick }) {
   const { user } = useAuth();
@@ -35,10 +36,9 @@ export default function Topbar({ onMenuClick }) {
       {/* Right Section */}
       <div className="flex items-center gap-2 sm:gap-4">
         {/* Notification Bell */}
-        <button className="w-10 h-10 rounded-lg border border-[#E8D5C4] bg-white flex items-center justify-center cursor-pointer transition-colors hover:bg-[#FFFBF5] relative">
-          <Bell size={18} color="#5C5C6E" />
-          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#E74C3C]" />
-        </button>
+        <div className="hidden sm:block">
+          <NotificationBell />
+        </div>
 
         {/* User Profile */}
         <button

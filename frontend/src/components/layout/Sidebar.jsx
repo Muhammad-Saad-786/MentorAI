@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "../../hooks/useAuth";
 import {
   LayoutDashboard,
   Code2,
@@ -24,6 +25,11 @@ export default function Sidebar({ onClose }) {
   const location = useLocation();
   const pathname = location.pathname;
   const navigate = useNavigate();
+  const { logout } = useAuth();
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <motion.aside
@@ -35,9 +41,8 @@ export default function Sidebar({ onClose }) {
       {/* Logo */}
       <div className="px-5 py-6 border-b border-[#E8D5C4] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#FF6B35] flex items-center justify-center shrink-0">
-            <Sparkles size={22} color="#FFFFFF" />
-          </div>
+          {/* Logo */}
+          <img src="/public/favicon.png" alt="logo" height={50} width={50} />
           <div>
             <h1 className="text-lg font-bold text-[#1A1A2E] font-['Cabinet_Grotesk',sans-serif] m-0 leading-tight">
               MentorAI
@@ -91,7 +96,10 @@ export default function Sidebar({ onClose }) {
 
       {/* Logout */}
       <div className="px-3 py-4 border-t border-[#E8D5C4]">
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-none bg-transparent text-[#E74C3C] text-sm font-medium cursor-pointer transition-colors duration-200 hover:bg-[#FDEDEC] font-sans">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-none bg-transparent text-[#E74C3C] text-sm font-medium cursor-pointer transition-colors duration-200 hover:bg-[#FDEDEC] font-sans"
+        >
           <LogOut size={20} />
           Log Out
         </button>

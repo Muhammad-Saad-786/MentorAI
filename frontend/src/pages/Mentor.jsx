@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import MarkdownRenderer from "../components/ui/MarkdownRenderer";
+import api from "../lib/api";
 import {
   Send,
   Sparkles,
@@ -15,7 +17,8 @@ import {
 } from "lucide-react";
 import { mentorApi } from "../services/mentorApi";
 import toast from "react-hot-toast";
-
+import { ProgressContext } from "../context/ProgressContext";
+import { useContext } from "react";
 const MODES = [
   { id: "default", label: "Mentor", icon: Brain },
   { id: "socratic", label: "Socratic", icon: Lightbulb },
@@ -24,6 +27,9 @@ const MODES = [
 ];
 
 export default function Mentor() {
+  const [searchParams] = useSearchParams();
+  const sessionIdFromUrl = searchParams.get("session");
+
   const [messages, setMessages] = useState([
     {
       role: "mentor",
@@ -35,9 +41,39 @@ export default function Mentor() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState("default");
-  const [sessionId] = useState(() => `session-${Date.now()}`);
+  const [sessionId, setSessionId] = useState(sessionIdFromUrl);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const { loadChatSessions } = useContext(ProgressContext);
+
+  // Load existing session if sessionId is provided in URL
+  useEffect(() => {
+    if (sessionIdFromUrl) {
+      loadSession(sessionIdFromUrl);
+    }
+  }, [sessionIdFromUrl]);
+
+  const loadSession = async (id) => {
+    try {
+      const response = await api.get(`/mentor/sessions/${id}`);
+      const session = response.data;
+      if (session && session.messages) {
+        setMessages(
+          session.messages.map((msg) => ({
+            role: msg.role,
+            content: msg.content,
+            timestamp: msg.timestamp || Date.now(),
+            hintLevel: msg.hintLevel,
+          })),
+        );
+        setMode(session.mode || "default");
+        setSessionId(session._id);
+      }
+    } catch (error) {
+      console.error("Failed to load session:", error);
+      toast.error("Could not load chat session");
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -62,6 +98,15 @@ export default function Mentor() {
 
     try {
       const data = await mentorApi.sendMessage(trimmed, sessionId, mode);
+      if (data.sessionId) {
+        setSessionId(data.sessionId);
+        // Update URL without reload
+        window.history.replaceState(
+          {},
+          "",
+          `/mentor?session=${data.sessionId}`,
+        );
+      }
       setMessages((prev) => [
         ...prev,
         {
@@ -71,6 +116,8 @@ export default function Mentor() {
           hintLevel: data.hintLevel,
         },
       ]);
+
+      loadChatSessions();
     } catch (error) {
       toast.error("Failed to get response. Please try again.");
       console.error("Mentor error:", error);
@@ -95,6 +142,9 @@ export default function Mentor() {
         timestamp: Date.now(),
       },
     ]);
+    setSessionId(null);
+    // Clear URL param
+    window.history.replaceState({}, "", "/mentor");
     toast.success("Chat cleared");
   };
 

@@ -2,51 +2,52 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import { Sparkles, Mail, Lock, ArrowRight } from "lucide-react";
-
+import toast from "react-hot-toast";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!form.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+    if (!form.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(form.email))
       newErrors.email = "Please enter a valid email";
-    }
-
-    if (!form.password) {
-      newErrors.password = "Password is required";
-    } else if (form.password.length < 6) {
+    if (!form.password) newErrors.password = "Password is required";
+    else if (form.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-
     setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await login(form.email, form.password);
+      toast.success("Welcome back!");
       navigate("/dashboard");
-    }, 1500);
+    } catch (err) {
+      const errorData = err.response?.data;
+      if (errorData?.requiresVerification) {
+        toast.error("Please verify your email first");
+        navigate("/verify-email", {
+          state: { userId: errorData.userId, email: errorData.email },
+        });
+      } else {
+        toast.error(errorData?.error || "Login failed");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -57,7 +58,7 @@ export default function LoginPage() {
         backgroundColor: "#FFFBF5",
       }}
     >
-      {/* Left Panel - Form */}
+      {/* Left Panel */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         animate={{ opacity: 1, x: 0 }}
@@ -70,7 +71,6 @@ export default function LoginPage() {
           padding: "80px",
         }}
       >
-        {/* Logo */}
         <div style={{ marginBottom: "48px" }}>
           <div
             style={{
@@ -80,19 +80,7 @@ export default function LoginPage() {
               marginBottom: "8px",
             }}
           >
-            <div
-              style={{
-                width: "44px",
-                height: "44px",
-                borderRadius: "14px",
-                backgroundColor: "#FF6B35",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Sparkles size={24} color="#FFFFFF" />
-            </div>
+            <img src="/public/favicon.png" alt="logo" height={50} width={50} />
 
             <h1
               style={{
@@ -106,26 +94,14 @@ export default function LoginPage() {
               MentorAI
             </h1>
           </div>
-
-          <p
-            style={{
-              color: "#5C5C6E",
-              fontSize: "15px",
-              margin: 0,
-            }}
-          >
+          <p style={{ color: "#5C5C6E", fontSize: "15px", margin: 0 }}>
             Welcome back! Ready to level up your coding skills?
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} style={{ maxWidth: "440px" }}>
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-            }}
+            style={{ display: "flex", flexDirection: "column", gap: "20px" }}
           >
             <Input
               label="Email address"
@@ -133,38 +109,22 @@ export default function LoginPage() {
               icon={Mail}
               placeholder="hello@example.com"
               value={form.email}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  email: e.target.value,
-                })
-              }
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
               error={errors.email}
             />
-
             <Input
               label="Password"
               type="password"
               icon={Lock}
               placeholder="Enter your password"
               value={form.password}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  password: e.target.value,
-                })
-              }
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
               error={errors.password}
             />
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-              }}
-            >
-              <a
-                href="#"
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Link
+                to="/forgot-password"
                 style={{
                   fontSize: "13px",
                   color: "#004E64",
@@ -173,10 +133,9 @@ export default function LoginPage() {
                 }}
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
-            {/* FIXED: Removed style override so Button component styles apply */}
             <Button type="submit" size="lg" disabled={isLoading}>
               {isLoading ? (
                 "Signing in..."
@@ -189,14 +148,7 @@ export default function LoginPage() {
           </div>
         </form>
 
-        {/* Register Link */}
-        <p
-          style={{
-            marginTop: "32px",
-            fontSize: "14px",
-            color: "#5C5C6E",
-          }}
-        >
+        <p style={{ marginTop: "32px", fontSize: "14px", color: "#5C5C6E" }}>
           Don't have an account?{" "}
           <Link
             to="/register"
@@ -211,14 +163,11 @@ export default function LoginPage() {
         </p>
       </motion.div>
 
-      {/* Right Panel - Visual */}
+      {/* Right Panel */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{
-          duration: 0.8,
-          delay: 0.2,
-        }}
+        transition={{ duration: 0.8, delay: 0.2 }}
         style={{
           flex: 1,
           backgroundColor: "#1A1A2E",
@@ -243,7 +192,6 @@ export default function LoginPage() {
             opacity: 0.1,
           }}
         />
-
         <div
           style={{
             position: "absolute",
@@ -260,10 +208,7 @@ export default function LoginPage() {
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{
-            delay: 0.5,
-            duration: 0.6,
-          }}
+          transition={{ delay: 0.5, duration: 0.6 }}
           style={{
             backgroundColor: "#2C2C3A",
             border: "1px solid #3A3A4E",
@@ -273,13 +218,7 @@ export default function LoginPage() {
             boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              gap: "8px",
-              marginBottom: "16px",
-            }}
-          >
+          <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
             <div
               style={{
                 width: "12px",
@@ -288,7 +227,6 @@ export default function LoginPage() {
                 backgroundColor: "#E74C3C",
               }}
             />
-
             <div
               style={{
                 width: "12px",
@@ -297,7 +235,6 @@ export default function LoginPage() {
                 backgroundColor: "#F39C12",
               }}
             />
-
             <div
               style={{
                 width: "12px",
@@ -307,7 +244,6 @@ export default function LoginPage() {
               }}
             />
           </div>
-
           <pre
             style={{
               fontFamily: "'JetBrains Mono', monospace",
@@ -319,13 +255,11 @@ export default function LoginPage() {
           >
             {`function becomeDeveloper() {
   const mentor = new MentorAI();
-
   while (!mastery) {
     mentor.guide();
     practice();
     levelUp();
   }
-
   return dreamJob;
 }`}
           </pre>

@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
 import { Sparkles, Mail, Lock, User, ArrowRight } from "lucide-react";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import toast from "react-hot-toast";
-
+import api from "../lib/api";
 export default function Register() {
   const navigate = useNavigate();
-  const { register } = useAuth();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -39,11 +37,23 @@ export default function Register() {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      await register(form.name, form.email, form.password);
-      toast.success("Account created successfully!");
-      navigate("/dashboard");
+      const response = await api.post("/auth/register", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
+
+      if (response.data.requiresVerification) {
+        toast.success("Verification code sent!");
+        navigate("/verify-email", {
+          state: {
+            userId: response.data.userId,
+            email: response.data.email,
+          },
+        });
+      }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Registration failed");
+      toast.error(err.response?.data?.error || "Registration failed");
     } finally {
       setIsLoading(false);
     }
@@ -79,19 +89,8 @@ export default function Register() {
               marginBottom: "8px",
             }}
           >
-            <div
-              style={{
-                width: "44px",
-                height: "44px",
-                borderRadius: "14px",
-                backgroundColor: "#FF6B35",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Sparkles size={24} color="#FFFFFF" />
-            </div>
+            <img src="/public/favicon.png" alt="logo" height={50} width={50} />
+
             <h1
               style={{
                 fontSize: "28px",

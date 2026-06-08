@@ -111,9 +111,8 @@ export default function Landing() {
       {/* ============ NAVIGATION ============ */}
       <nav className="landing-nav">
         <div className="landing-nav-left">
-          <div className="landing-logo-icon">
-            <Sparkles size={22} color="#FFFFFF" />
-          </div>
+          <img src="/public/favicon.png" alt="logo" height={50} width={50} />
+
           <span className="landing-logo-text">MentorAI</span>
         </div>
 
@@ -386,9 +385,8 @@ export default function Landing() {
       {/* ============ FOOTER ============ */}
       <footer className="landing-footer">
         <div className="footer-left">
-          <div className="landing-logo-icon small">
-            <Sparkles size={16} color="#FFFFFF" />
-          </div>
+          <img src="/public/favicon.png" alt="logo" height={50} width={50} />
+
           <span className="footer-logo-text">MentorAI</span>
         </div>
         <p>Built to teach, not to answer. © 2025</p>

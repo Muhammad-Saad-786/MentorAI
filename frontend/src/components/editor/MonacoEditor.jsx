@@ -1,6 +1,13 @@
+import { useContext } from "react";
 import { useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ProgressContext } from "../../context/ProgressContext";
+import { useAuth } from "../../hooks/useAuth";
+import { compilerApi } from "../../services/compilerApi";
+
+import { Search, Sparkles } from "lucide-react";
+
 import {
   Play,
   Copy,
@@ -15,7 +22,6 @@ import {
   Terminal,
   Info,
 } from "lucide-react";
-import { compilerApi } from "../../services/compilerApi";
 import toast from "react-hot-toast";
 
 const LANGUAGE_OPTIONS = [
@@ -175,6 +181,10 @@ export default function MonacoEditor() {
   const [execResult, setExecResult] = useState(null);
   const editorRef = useRef(null);
   const codeRef = useRef(defaultCode.javascript);
+  const { trackExecution } = useContext(ProgressContext);
+  const [isReviewing, setIsReviewing] = useState(false);
+
+  const { user } = useAuth();
 
   const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
@@ -199,7 +209,6 @@ export default function MonacoEditor() {
       : codeRef.current;
 
     try {
-      // Try browser execution first for JS and Python
       if (language === "javascript") {
         const result = executeJavaScript(currentCode);
         setOutput(result.output);
@@ -209,6 +218,13 @@ export default function MonacoEditor() {
           memory: null,
           error: result.error,
         });
+
+        // Track progress after successful execution
+        if (result.status === "success") {
+          trackExecution(currentCode, language, "solved").catch(() => {});
+        } else {
+          trackExecution(currentCode, language, "attempted").catch(() => {});
+        }
       } else if (language === "python") {
         toast.loading("Loading Python engine...", { id: "python-load" });
         const result = await executePython(currentCode);
@@ -220,16 +236,26 @@ export default function MonacoEditor() {
           memory: null,
           error: result.error,
         });
+
+        // Track Python execution
+        trackExecution(
+          currentCode,
+          language,
+          result.status === "success" ? "solved" : "attempted",
+        ).catch(() => {});
       } else {
-        // For other languages, call backend
-        const result = await compilerApi.runCode(currentCode, language);
-        setOutput(result.output || "Code sent to server.");
+        // For other languages — show info message
+        setOutput(
+          `${language} execution is not available in the browser yet.\n\nTry switching to JavaScript for live code execution.`,
+        );
         setExecResult({
-          status: result.status || "info",
+          status: "info",
           time: null,
           memory: null,
           error: null,
         });
+
+        trackExecution(currentCode, language, "attempted").catch(() => {});
       }
     } catch (error) {
       setOutput(`Failed to execute code: ${error.message}`);
@@ -239,8 +265,49 @@ export default function MonacoEditor() {
         memory: null,
         error: error.message,
       });
+
+      // Track failed execution
+      trackExecution(currentCode, language, "failed").catch(() => {});
     } finally {
       setIsRunning(false);
+    }
+  };
+  const handleReviewCode = async () => {
+    const currentCode = editorRef.current
+      ? editorRef.current.getValue()
+      : codeRef.current;
+
+    if (!currentCode.trim()) {
+      toast.error("No code to review");
+      return;
+    }
+
+    setIsReviewing(true);
+    setOutputVisible(true);
+    setOutput("");
+    setExecResult({ status: "info", time: null, memory: null, error: null });
+
+    try {
+      const result = await compilerApi.reviewCode(currentCode, language);
+      setOutput(result.review);
+      setExecResult({
+        status: "success",
+        time: null,
+        memory: null,
+        error: null,
+      });
+      toast.success("Code review complete!");
+    } catch (error) {
+      setOutput("Failed to get code review. Please try again.");
+      setExecResult({
+        status: "error",
+        time: null,
+        memory: null,
+        error: error.message,
+      });
+      toast.error("Code review failed");
+    } finally {
+      setIsReviewing(false);
     }
   };
 
@@ -320,6 +387,23 @@ export default function MonacoEditor() {
               <span className="editor-btn-text">
                 {language === "python" && isRunning ? "Loading..." : "Run Code"}
               </span>
+            </button>
+
+            <button
+              onClick={handleReviewCode}
+              disabled={isReviewing}
+              className="editor-btn editor-btn-review"
+              style={{
+                opacity: isReviewing ? 0.7 : 1,
+                cursor: isReviewing ? "not-allowed" : "pointer",
+              }}
+            >
+              {isReviewing ? (
+                <RefreshCw size={16} className="editor-spin" />
+              ) : (
+                <Sparkles size={16} />
+              )}
+              <span className="editor-btn-text">Review Code</span>
             </button>
             <button
               onClick={handleCopyCode}
@@ -525,7 +609,8 @@ export default function MonacoEditor() {
           word-break: break-word; line-height: 1.7;
         }
         .editor-output-pre.error { color: #E74C3C; }
-
+        .editor-btn-review { background: #FF6B35; color: #FFFFFF; }
+        .editor-btn-review:hover:not(:disabled) { background: #E55A2B; }
         @media (max-width: 1023px) {
           .editor-container { height: calc(100vh - 120px); }
           .editor-toolbar { padding: 10px 12px; border-radius: 14px 14px 0 0; }

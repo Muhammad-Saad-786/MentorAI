@@ -9,6 +9,8 @@ import compilerRoutes from "./routes/compilerRoutes.js";
 import progressRoutes from "./routes/progressRoutes.js";
 import { errorHandler } from "./middlewares/authMiddleware.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import achievementRoutes from "./routes/achievementRoutes.js";
+import interviewRoutes from "./routes/interviewRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +32,8 @@ app.use("/api/mentor", mentorRoutes);
 app.use("/api/compiler", compilerRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/achievements", achievementRoutes);
+app.use("/api/interview", interviewRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

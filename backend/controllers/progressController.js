@@ -95,6 +95,14 @@ export const trackProgress = async (req, res) => {
 
     progress.bestStreak = Math.max(progress.bestStreak, progress.currentStreak);
     await progress.save();
+    // Save badge
+    try {
+      const { checkProblemAchievements } =
+        await import("../services/achievementService.js");
+      await checkProblemAchievements(req.user._id);
+    } catch (e) {
+      console.error("Achievement check error:", e.message);
+    }
 
     // Try to create notifications (don't fail if notification service errors)
     try {
@@ -191,5 +199,105 @@ export const getHistory = async (req, res) => {
     res.json(history);
   } catch (error) {
     res.status(500).json({ error: "Failed to get history" });
+  }
+};
+
+// GET /api/progress/analytics — Get detailed analytics
+export const getAnalytics = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Get all code history
+    const history = await CodeHistory.find({ userId }).sort({ createdAt: 1 });
+
+    // Daily activity (last 30 days)
+    const dailyActivity = {};
+    const now = new Date();
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const key = date.toISOString().split("T")[0];
+      dailyActivity[key] = { date: key, solved: 0, attempted: 0, failed: 0 };
+    }
+
+    history.forEach((h) => {
+      const key = new Date(h.createdAt).toISOString().split("T")[0];
+      if (dailyActivity[key]) {
+        if (h.status === "solved") dailyActivity[key].solved++;
+        else if (h.status === "failed") dailyActivity[key].failed++;
+        else dailyActivity[key].attempted++;
+      }
+    });
+
+    // Language distribution
+    const languageStats = {};
+    history.forEach((h) => {
+      if (!languageStats[h.language]) languageStats[h.language] = 0;
+      languageStats[h.language]++;
+    });
+
+    // Topic distribution (from progress)
+    const progress = await Progress.findOne({ userId });
+    const topicStats = (progress?.topics || []).map((t) => ({
+      name: t.name,
+      score: t.score,
+      solved: t.solved,
+      attempts: t.attempts,
+    }));
+
+    // Weekly summary
+    const weeklyData = [];
+    for (let i = 3; i >= 0; i--) {
+      const weekStart = new Date(now);
+      weekStart.setDate(weekStart.getDate() - (i * 7 + weekStart.getDay()));
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+
+      const weekHistory = history.filter((h) => {
+        const d = new Date(h.createdAt);
+        return d >= weekStart && d < weekEnd;
+      });
+
+      weeklyData.push({
+        week: `Week ${4 - i}`,
+        solved: weekHistory.filter((h) => h.status === "solved").length,
+        attempted: weekHistory.filter((h) => h.status !== "solved").length,
+        total: weekHistory.length,
+      });
+    }
+
+    // Totals
+    const totalHistory = history.length;
+    const solvedRate =
+      totalHistory > 0
+        ? Math.round(
+            (history.filter((h) => h.status === "solved").length /
+              totalHistory) *
+              100,
+          )
+        : 0;
+
+    res.json({
+      dailyActivity: Object.values(dailyActivity),
+      languageStats: Object.entries(languageStats).map(([name, value]) => ({
+        name,
+        value,
+      })),
+      topicStats,
+      weeklyData,
+      totals: {
+        totalExecutions: totalHistory,
+        totalSolved: progress?.totalSolved || 0,
+        totalAttempts: progress?.totalAttempts || 0,
+        solvedRate,
+        currentStreak: progress?.currentStreak || 0,
+        bestStreak: progress?.bestStreak || 0,
+        totalTopics: topicStats.length,
+      },
+    });
+  } catch (error) {
+    console.error("Analytics error:", error.message);
+    res.status(500).json({ error: "Failed to get analytics" });
   }
 };

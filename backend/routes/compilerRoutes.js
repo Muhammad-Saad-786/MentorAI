@@ -63,6 +63,13 @@ router.post("/review", protect, async (req, res) => {
       review: result.response,
       hintLevel: result.hintLevel,
     });
+    try {
+      const { checkReviewAchievements } =
+        await import("../services/achievementService.js");
+      await checkReviewAchievements(req.user._id);
+    } catch (e) {
+      console.error("Achievement check error:", e.message);
+    }
   } catch (error) {
     console.error("Review error:", error.message);
     res.status(500).json({ error: "Failed to review code" });

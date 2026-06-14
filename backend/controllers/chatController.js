@@ -67,6 +67,14 @@ export const sendMessage = async (req, res) => {
     chatSession.hintLevel = aiResult.hintLevel;
     chatSession.updatedAt = new Date();
     await chatSession.save();
+    // save badge
+    try {
+      const { checkChatAchievements } =
+        await import("../services/achievementService.js");
+      await checkChatAchievements(req.user._id);
+    } catch (e) {
+      console.error("Achievement check error:", e.message);
+    }
 
     // Try to send notification (don't fail if it errors)
     try {

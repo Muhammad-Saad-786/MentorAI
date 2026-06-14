@@ -6,6 +6,8 @@ import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
 import SkillGraph from "../components/dashboard/SkillGraph";
 import TopicChart from "../components/dashboard/TopicChart";
+import AchievementBadges from "../components/dashboard/AchievementBadges";
+
 import { useNavigate } from "react-router-dom";
 import {
   Flame,
@@ -143,7 +145,7 @@ export default function Dashboard() {
             fontFamily: "'Cabinet Grotesk', sans-serif",
           }}
         >
-          Welcome back, {user?.name || "Developer"} 👋
+          Welcome back, {user?.name || "Developer"}
         </h2>
         <p style={{ fontSize: 14, color: "#5C5C6E", margin: 0 }}>
           Ready to continue your coding journey?
@@ -668,6 +670,11 @@ export default function Dashboard() {
           </div>
         </Card>
       )}
+
+      {/* Achievements */}
+      <Card padding="24px" style={{ marginTop: 20 }}>
+        <AchievementBadges />
+      </Card>
     </motion.div>
   );
 }

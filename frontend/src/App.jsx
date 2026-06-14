@@ -10,13 +10,14 @@ import Dashboard from "./pages/Dashboard";
 import Editor from "./pages/Editor";
 import Mentor from "./pages/Mentor";
 import DSA from "./pages/DSA";
-import Analytics from "./pages/Analytics";
+import Analytic from "./pages/Analytic";
 import Settings from "./pages/Settings";
 import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgetPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import DashboardShell from "./components/layout/DashboardShell";
+import Interview from "./pages/Interview";
 
 export default function App() {
   return (
@@ -56,8 +57,9 @@ export default function App() {
               <Route path="/editor" element={<Editor />} />
               <Route path="/mentor" element={<Mentor />} />
               <Route path="/dsa" element={<DSA />} />
-              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/analytics" element={<Analytic />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/interview" element={<Interview />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Sparkles,
+  Mic,
 } from "lucide-react";
 
 const navItems = [
@@ -18,6 +19,7 @@ const navItems = [
   { label: "AI Mentor", icon: MessageSquare, path: "/mentor" },
   { label: "DSA Practice", icon: Brain, path: "/dsa" },
   { label: "Analytics", icon: BarChart3, path: "/analytics" },
+  { label: "Interview", icon: Mic, path: "/interview" },
   { label: "Settings", icon: Settings, path: "/settings" },
 ];
 

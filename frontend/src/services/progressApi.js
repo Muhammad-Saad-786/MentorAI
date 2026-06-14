@@ -20,4 +20,8 @@ export const progressApi = {
     const response = await api.get("/progress/history");
     return response.data;
   },
+  getAnalytics: async () => {
+    const response = await api.get("/progress/analytics");
+    return response.data;
+  },
 };

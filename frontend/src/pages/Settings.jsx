@@ -117,7 +117,6 @@ export default function Settings() {
     { id: "profile", label: "Profile", icon: User },
     { id: "security", label: "Security", icon: Shield },
     { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "appearance", label: "Appearance", icon: Sun },
   ];
 
   const ToggleSwitch = ({ state, setter }) => (
@@ -434,57 +433,6 @@ export default function Settings() {
                   <Save size={18} />{" "}
                   {savingNotifications ? "Saving..." : "Save Preferences"}
                 </Button>
-              </Card>
-            </motion.div>
-          )}
-
-          {/* Appearance Tab */}
-          {activeTab === "appearance" && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Card padding="24px">
-                <h3 className="settings-section-title">
-                  <Sun size={20} color="#FF6B35" /> Appearance
-                </h3>
-                <p className="settings-sub-label">Theme</p>
-                <div className="settings-theme-row">
-                  {[
-                    { id: "light", label: "Light", icon: Sun },
-                    { id: "dark", label: "Dark", icon: Moon },
-                  ].map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => {
-                        setTheme(t.id);
-                        toast.success(`Switched to ${t.label} mode`);
-                      }}
-                      className={`settings-theme-btn ${theme === t.id ? "active" : ""}`}
-                    >
-                      <t.icon size={18} /> {t.label}
-                    </button>
-                  ))}
-                </div>
-                <p className="settings-sub-label" style={{ marginTop: 20 }}>
-                  Font Size
-                </p>
-                <div className="settings-theme-row">
-                  {["small", "medium", "large"].map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setFontSize(size)}
-                      className={`settings-font-btn ${fontSize === size ? "active" : ""}`}
-                      style={{
-                        fontSize:
-                          size === "small" ? 12 : size === "large" ? 16 : 14,
-                      }}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
               </Card>
             </motion.div>
           )}

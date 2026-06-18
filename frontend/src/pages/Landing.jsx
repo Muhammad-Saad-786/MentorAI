@@ -111,7 +111,7 @@ export default function Landing() {
       {/* ============ NAVIGATION ============ */}
       <nav className="landing-nav">
         <div className="landing-nav-left">
-          <img src="/public/favicon.png" alt="logo" height={50} width={50} />
+          <img src="/favicon.png" alt="logo" height={50} width={50} />
 
           <span className="landing-logo-text">MentorAI</span>
         </div>
@@ -283,7 +283,7 @@ export default function Landing() {
             transition={{ duration: 0.7, ease: "easeOut" }}
             className="showcase-video"
           >
-            <VideoCard src="/public/header-1.mp4" />
+            <VideoCard src="/header-1.mp4" />
           </motion.div>
 
           <motion.div
@@ -355,7 +355,7 @@ export default function Landing() {
             transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
             className="showcase-video"
           >
-            <VideoCard src="/public/MentorAI-header.mp4" />
+            <VideoCard src="/MentorAI-header.mp4" />
           </motion.div>
         </div>
       </section>
@@ -385,7 +385,7 @@ export default function Landing() {
       {/* ============ FOOTER ============ */}
       <footer className="landing-footer">
         <div className="footer-left">
-          <img src="/public/favicon.png" alt="logo" height={50} width={50} />
+          <img src="/favicon.png" alt="logo" height={50} width={50} />
 
           <span className="footer-logo-text">MentorAI</span>
         </div>

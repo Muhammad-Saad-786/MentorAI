@@ -230,7 +230,7 @@ export default function Landing() {
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="hero-video"
           >
-            <VideoCard src="/public/robot-coding.mp4" />
+            <VideoCard src="/robot-coding.mp4" />
             {/* Decorative element behind video */}
             <div className="hero-video-glow" />
           </motion.div>
